@@ -67,25 +67,6 @@ st.markdown("""
     padding: 1rem;
     margin: 1rem 0;
 }
-.final-result {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 2rem;
-    margin: 2rem 0;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-.final-result h2 {
-    color: white;
-    text-align: center;
-    margin-bottom: 1rem;
-    font-size: 2rem;
-}
-.final-result-content {
-    background: white;
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-top: 1rem;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -99,10 +80,6 @@ if 'swinir_installed' not in st.session_state:
     st.session_state.swinir_installed = False
 if 'models_downloaded' not in st.session_state:
     st.session_state.models_downloaded = False
-if 'sr_result' not in st.session_state:
-    st.session_state.sr_result = None
-if 'processing_info' not in st.session_state:
-    st.session_state.processing_info = None
 
 def setup_directories():
     """Create necessary directories"""
@@ -349,50 +326,6 @@ def calculate_brisque(image):
     except:
         return None
 
-def display_final_sr_result():
-    """Display the final super-resolution result prominently"""
-    if st.session_state.sr_result is not None and st.session_state.processing_info is not None:
-        st.markdown('<div class="final-result">', unsafe_allow_html=True)
-        st.markdown('<h2>🎯 Final Super-Resolution Result</h2>', unsafe_allow_html=True)
-        
-        st.markdown('<div class="final-result-content">', unsafe_allow_html=True)
-        
-        # Display the final SR image prominently
-        st.image(st.session_state.sr_result, 
-                caption=f"Super-Resolution Output - {st.session_state.processing_info['method']} (Scale: {st.session_state.processing_info['scale']}×)",
-                use_column_width=True, 
-                clamp=True)
-        
-        # Display key information
-        info = st.session_state.processing_info
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("Method", info['method'])
-        with col2:
-            st.metric("Scale Factor", f"{info['scale']}×")
-        with col3:
-            st.metric("Input Size", f"{info['input_size'][1]}×{info['input_size'][0]}")
-        with col4:
-            st.metric("Output Size", f"{info['output_size'][1]}×{info['output_size'][0]}")
-        
-        # Additional details
-        st.markdown(f"""
-        *🔍 Processing Details:*
-        - *Method Used*: {info['method']}
-        - *Scale Enhancement*: {info['scale']}× upscaling
-        - *Input Resolution*: {info['input_size'][1]} × {info['input_size'][0]} pixels
-        - *Output Resolution*: {info['output_size'][1]} × {info['output_size'][0]} pixels
-        - *Pixel Increase*: {info['input_size'][0] * info['input_size'][1]:,} → {info['output_size'][0] * info['output_size'][1]:,} pixels
-        - *Enhancement Factor*: {(info['output_size'][0] * info['output_size'][1]) / (info['input_size'][0] * info['input_size'][1]):.1f}× more pixels
-        """)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        return True
-    return False
-
 # Main App
 def main():
     st.markdown('<h1 class="main-header">🖼 Super Resolution Image Processing</h1>', unsafe_allow_html=True)
@@ -574,17 +507,8 @@ def main():
                         # Weighted fusion
                         sr_result = cv2.addWeighted(sr_classical, fusion_weight, sr_dl, 1-fusion_weight, 0)
                 
-                # Store results in session state
-                st.session_state.sr_result = sr_result
-                st.session_state.processing_info = {
-                    'method': method,
-                    'scale': scale_factor,
-                    'input_size': img1.shape,
-                    'output_size': sr_result.shape
-                }
-                
-                # Display intermediate results
-                st.markdown('<div class="sub-header">✨ Processing Results</div>', unsafe_allow_html=True)
+                # Display results
+                st.markdown('<div class="sub-header">✨ Super Resolution Results</div>', unsafe_allow_html=True)
                 
                 col1, col2 = st.columns(2)
                 with col1:
@@ -654,29 +578,79 @@ def main():
                 col1, col2 = st.columns(2)
                 with col1:
                     niqe_score = calculate_niqe(sr_result)
-                    st.metric("NIQE Score", f"{niqe_score:.2f}" if niqe_score is not None else "N/A")
+                    if niqe_score:
+                        st.metric("NIQE Score", f"{niqe_score:.2f}")
+                        st.caption("Lower is better (3-8 range)")
+                
                 with col2:
                     brisque_score = calculate_brisque(sr_result)
-                    st.metric("BRISQUE Score", f"{brisque_score:.2f}" if brisque_score is not None else "N/A")
+                    if brisque_score:
+                        st.metric("BRISQUE Score", f"{brisque_score:.2f}")
+                        st.caption("Lower is better (0-100 range)")
                 
-                # Final result
-                display_final_sr_result()
-
-                # Download section
-                st.markdown('<div class="sub-header">⬇ Download Super-Resolved Image</div>', unsafe_allow_html=True)
-
-                # Convert image to bytes
-                result_pil = Image.fromarray(sr_result)
+                # Download result
+                st.markdown('<div class="sub-header">💾 Download Results</div>', unsafe_allow_html=True)
+                
+                # Convert to PIL for download
+                sr_pil = Image.fromarray(sr_result)
                 buf = io.BytesIO()
-                result_pil.save(buf, format="PNG")
-                byte_im = buf.getvalue()
-
-                st.download_button(
-                    label="📥 Download SR Image (PNG)",
-                    data=byte_im,
-                    file_name="super_resolved_output.png",
-                    mime="image/png"
-                )
+                sr_pil.save(buf, format='PNG')
+                buf.seek(0)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.download_button(
+                        label="📥 Download SR Image",
+                        data=buf.getvalue(),
+                        file_name=f"super_resolution_result_{method.lower().replace(' ', '_').replace('(', '').replace(')', '')}_x{scale_factor}.png",
+                        mime="image/png"
+                    )
+                
+                with col2:
+                    # Create comparison image
+                    comparison = np.hstack([
+                        cv2.resize(img1, (img1.shape[1]*2, img1.shape[0]*2)),
+                        cv2.resize(sr_result, (img1.shape[1]*2, img1.shape[0]*2))
+                    ])
+                    comparison_pil = Image.fromarray(comparison)
+                    buf_comp = io.BytesIO()
+                    comparison_pil.save(buf_comp, format='PNG')
+                    buf_comp.seek(0)
+                    
+                    st.download_button(
+                        label="📥 Download Comparison",
+                        data=buf_comp.getvalue(),
+                        file_name=f"sr_comparison_x{scale_factor}.png",
+                        mime="image/png"
+                    )
+    
+    else:
+        st.markdown('<div class="info-box">', unsafe_allow_html=True)
+        st.markdown("""
+        ### 🚀 Welcome to Super Resolution Image Processing!
+        
+        This application provides three different approaches for super-resolution:
+        
+        1. *Classical (Iterative Back-Projection)*: Traditional approach using iterative refinement
+        2. *Deep Learning (SwinIR)*: State-of-the-art transformer-based super-resolution
+        3. *Hybrid Fusion*: Combines both classical and deep learning approaches
+        
+        *📋 Setup Instructions:*
+        1. Click "Setup SwinIR" to download the repository and pre-trained models
+        2. Upload 1-2 low-resolution images using the sidebar
+        3. Optionally upload a high-resolution reference for evaluation
+        4. Select your preferred method and scale factor
+        5. Click "Process Super Resolution" to generate results
+        
+        *🔧 Features:*
+        - ECC-based image alignment for multi-image super-resolution
+        - Multiple evaluation metrics (PSNR, SSIM, NIQE, BRISQUE)
+        - Comparison with ground truth HR images
+        - Download results and comparisons
+        
+        *📁 Supported formats:* TIF, TIFF, PNG, JPG, JPEG
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
