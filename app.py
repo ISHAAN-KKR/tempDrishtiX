@@ -433,7 +433,7 @@ def main():
     .sidebar-title {
         font-size: 1.8rem;
         font-weight: 700;
-        color: #1e40af;
+        color: #1eaf;
         margin-bottom: 1rem;
         text-align: center;
     }
