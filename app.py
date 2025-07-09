@@ -27,7 +27,7 @@ warnings.filterwarnings('ignore')
 
 # Page config
 st.set_page_config(
-    page_title="DrishtiX: Super Resolution Image Processing",
+    page_title="DrishtiX – Where Earth Meets Insight",
     page_icon="Logo.jpg",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -371,7 +371,7 @@ def main():
         f"""
         <div style="display: flex; align-items: center; justify-content: center">
             <img src="{img_data}" width="69" style="margin-right: 15px;">
-            <h1 style="margin: 0; font-size: 2em;">Super Resolution Image Processing</h1>
+            <h1 style="margin: 0; font-size: 2em;">DrishtiX – Where Earth Meets Insight</h1>
         </div>
         """,
         unsafe_allow_html=True
@@ -1219,8 +1219,8 @@ def main():
         # Create a container with custom styling
         with st.container():
             st.markdown("""
-            <div style="background: linear-gradient(135deg, #e0f2fe, #f8fafc); padding: 2rem; border-radius: 18px; border-left: 8px solid #3b82f6; margin: 2rem 0;">
-                <h2 style="font-size: 2rem; font-weight: 1000; color: #1e3a8a; margin-bottom: 1.5rem; text-align: center;">
+            <div style="background: linear-gradient(135deg, #e0f2fe, #f8fafc); padding: 1rem; border-radius: 18px; border-left: 4px solid #3b82f6; margin: 1.5rem 0;">
+                <h2 style="font-size: 2rem; font-weight: 1000; color: #1e3a8a; margin-bottom: 0.5rem; text-align: center;">
                     🚀 Welcome to Super Resolution Image Processing
                 </h2>
             </div>
