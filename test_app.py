@@ -20,15 +20,12 @@ import shutil
 import git
 from urllib.parse import urlparse
 import warnings
-# import base64
-import base64
-from io import BytesIO
 warnings.filterwarnings('ignore')
 
 # Page config
 st.set_page_config(
-    page_title="DrishtiX: Super Resolution Image Processing",
-    page_icon="Logo.jpg",
+    page_title="Super Resolution Image Processing",
+    page_icon="🖼️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -304,7 +301,7 @@ def apply_swinir_sr(image, scale=4, model_name="001_classicalSR_DIV2K_s48w8_Swin
         
         # Check if the result is predominantly bright (close to 1.0)
         if sr_gray.mean() > 0.95:
-            # st.warning("⚠️ SwinIR output is very bright. This might indicate an issue with the model or input.")
+            st.warning("⚠️ SwinIR output is very bright. This might indicate an issue with the model or input.")
             # Normalize the result to use full range
             sr_min, sr_max = sr_gray.min(), sr_gray.max()
             if sr_max > sr_min:
@@ -357,26 +354,10 @@ def calculate_brisque(image):
         return np.random.uniform(20.0, 80.0)  # BRISQUE scores typically range 0-100
     except:
         return None
-def get_base64_image(image_path):
-    with open(image_path, "rb") as img_file:
-        encoded_string = base64.b64encode(img_file.read()).decode()
-    return f"data:image/jpeg;base64,{encoded_string}"
-
-# Load base64 string of your image
-img_data = get_base64_image("Logo.jpg")
 
 # Main App
 def main():
-    st.markdown(
-        f"""
-        <div style="display: flex; align-items: center; justify-content: center">
-            <img src="{img_data}" width="69" style="margin-right: 15px;">
-            <h1 style="margin: 0; font-size: 2em;">Super Resolution Image Processing</h1>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    st.markdown('<h1 class="main-header">🖼️ Super Resolution Image Processing</h1>', unsafe_allow_html=True)
     
     # Setup section
     st.markdown('<div class="sub-header">🔧 Setup & Installation</div>', unsafe_allow_html=True)
@@ -388,9 +369,9 @@ def main():
             with st.spinner("Setting up SwinIR..."):
                 setup_swinir()
     
-    # with col2:
-    #     swinir_status = "✅ Ready" if st.session_state.swinir_installed else "❌ Not Installed"
-    #     st.info(f"SwinIR Status: {swinir_status}")
+    with col2:
+        swinir_status = "✅ Ready" if st.session_state.swinir_installed else "❌ Not Installed"
+        st.info(f"SwinIR Status: {swinir_status}")
     
     with col3:
         models_status = "✅ Downloaded" if st.session_state.models_downloaded else "❌ Not Downloaded"
@@ -403,10 +384,7 @@ def main():
 
     # Upload Section - LR Images
     st.sidebar.markdown('<div class="sidebar-section">📥 Select Two LR Images</div>', unsafe_allow_html=True)
-    st.sidebar.markdown(
-    '<div style="color: white;" class="sidebar-sub">Upload two low-resolution images for super-resolution processing</div>',
-    unsafe_allow_html=True
-    )
+    st.sidebar.markdown('<div class="sidebar-sub">Upload two low-resolution images for super-resolution processing</div>', unsafe_allow_html=True)
     uploaded_files = st.sidebar.file_uploader(
         "Upload 2 Low-Resolution Images",
         type=['tif', 'tiff', 'png', 'jpg', 'jpeg'],
@@ -415,15 +393,7 @@ def main():
 
     # Upload Section - HR Image
     st.sidebar.markdown('<div class="sidebar-section">📌 Select HR Image for Reference Evaluation</div>', unsafe_allow_html=True)
-    st.sidebar.markdown(
-        """
-        <div style="color: white; font-size: 0.9rem; padding-top: 10px;">
-            (Optional) Upload a high-resolution ground-truth image for metric evaluation
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    st.sidebar.markdown('<div class="sidebar-sub">(Optional) Upload a high-resolution ground-truth image for metric evaluation</div>', unsafe_allow_html=True)
     hr_reference = st.sidebar.file_uploader(
         "Upload High-Resolution Reference",
         type=['tif', 'tiff', 'png', 'jpg', 'jpeg']
@@ -508,10 +478,10 @@ def main():
         #         buf.seek(0)
                 
         #         # Display using Streamlit
-        #         st.image(buf, caption=f"LR Image {i+1} (PNG Grayscale)", use_container_width=True)
+        #         st.image(buf, caption=f"LR Image {i+1} (PNG Grayscale)", use_column_width=True)
         #         # Normalize to 0-255 for display
         #         img_display = (255 * (img - img.min()) / (img.max() - img.min())).astype(np.uint8)
-        #         st.image(img_display, caption="...", use_container_width=True)
+        #         st.image(img_display, caption="...", use_column_width=True)
 
         #         st.text(f"Resolution: {img.shape[1]}×{img.shape[0]}")
 
@@ -675,7 +645,7 @@ def main():
                 final_enhanced = np.clip(final_enhanced, 0, 255).astype(np.uint8)
             
             return final_enhanced
-        
+
         def display_image_stats(image, label="Image"):
             """Helper function to display image statistics for debugging"""
             if image is not None:
@@ -708,7 +678,7 @@ def main():
             # Display using Streamlit
             #col1, col2 = st.columns(2)
             with [col1, col2][i]:
-                st.image(robust_display_format(img_display), caption=f"LR Image {i+1} (Normalized)", use_container_width=True)
+                st.image(robust_display_format(img_display), caption=f"LR Image {i+1} (Normalized)", use_column_width=True)
                 st.text(f"Resolution: {img.shape[1]}×{img.shape[0]}")
                 st.text(f"Data Type: {img.dtype}")
                 st.text(f"Min: {img.min()} | Max: {img.max()}")
@@ -732,9 +702,9 @@ def main():
 
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.image(robust_display_format(img1), caption="Reference Image", use_container_width=True, clamp=True)
+                    st.image(robust_display_format(img1), caption="Reference Image", use_column_width=True, clamp=True)
                 with col2:
-                    st.image(robust_display_format(aligned_img2), caption="Aligned Image", use_container_width=True, clamp=True)
+                    st.image(robust_display_format(aligned_img2), caption="Aligned Image", use_column_width=True, clamp=True)
                 with col3:
                     if aligned_img2 is not None:
                         st.markdown('<div class="sub-header">🔗 ECC Alignment Correlation</div>', unsafe_allow_html=True)
@@ -843,182 +813,37 @@ def main():
                 col1, col2 = st.columns(2)
                 with col1:
                     # Display original image with proper format
-                    st.image(robust_display_format(img1), caption="Original LR Image", use_container_width=True, clamp=True)
+                    st.image(robust_display_format(img1), caption="Original LR Image", use_column_width=True, clamp=True)
                     st.text(f"Original: {img1.shape[1]}×{img1.shape[0]}")
                 with col2:
                     # Display SR result with proper format
-                    # display_image_stats(sr_result, "SR Result (original data)")
+                    display_image_stats(sr_result, "SR Result (original data)")
                     
                     # Show key statistics only
-                    # white_pixels = np.sum(sr_result == 255)
-                    # total_pixels = sr_result.size
-                    # white_percentage = (white_pixels/total_pixels)*100
-                    # st.text(f"📊 White pixels: {white_percentage:.1f}%")
+                    white_pixels = np.sum(sr_result == 255)
+                    total_pixels = sr_result.size
+                    white_percentage = (white_pixels/total_pixels)*100
+                    st.text(f"📊 White pixels: {white_percentage:.1f}%")
                     
                     # Apply advanced display enhancement for better clarity
                     sr_display = enhance_image_for_display(sr_result.copy())
                     
-                    # display_image_stats(sr_display, "SR Result (enhanced for display)")
+                    display_image_stats(sr_display, "SR Result (enhanced for display)")
                     
-                    st.image(sr_display, caption=f"SR Result ({method})", use_container_width=True, clamp=True)
-                    # st.text(f"Super-resolved: {sr_result.shape[1]}×{sr_result.shape[0]}")
+                    st.image(sr_display, caption=f"SR Result ({method})", use_column_width=True, clamp=True)
+                    st.text(f"Super-resolved: {sr_result.shape[1]}×{sr_result.shape[0]}")
 
                 
                 # Resolution comparison
-                # st.markdown('<div class="success-box">', unsafe_allow_html=True)
-                # st.markdown(f"""
-                # **📊 Resolution Enhancement:**
-                # - Original: {img1.shape[1]} × {img1.shape[0]} pixels
-                # - Super-resolved: {sr_result.shape[1]} × {sr_result.shape[0]} pixels
-                # - Scale Factor: {scale_factor}× ({sr_result.shape[1]//img1.shape[1]:.1f}× actual)
-                # - Total Pixels: {img1.shape[0]*img1.shape[1]:,} → {sr_result.shape[0]*sr_result.shape[1]:,}
-                # """)
-                # st.markdown('</div>', unsafe_allow_html=True)
-                # Resolution comparison (aesthetic version)
-                # if sr_result is not None and img1 is not None:
-                #     st.markdown(
-                #         f"""
-                #         <style>
-                #             .res-box {{
-                #                 background-color: #f0fdf4;
-                #                 border-left: 6px solid #22c55e;
-                #                 padding: 1rem;
-                #                 border-radius: 10px;
-                #                 margin-top: 20px;
-                #                 font-family: 'Segoe UI', sans-serif;
-                #                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                #             }}
-                #             .res-box h4 {{
-                #                 margin-top: 0;
-                #                 color: #166534;
-                #                 font-size: 2rem;
-                #             }}
-                #             .res-box ul {{
-                #                 padding-left: 1.2rem;
-                #                 margin: 0;
-                #             }}
-                #             .res-box li {{
-                #                 margin-bottom: 0.5rem;
-                #                 font-size: 1.5rem;
-                #                 color: #1e3a8a;
-                #             }}
-                #         </style>
-
-                #         <div class="res-box">
-                #             <h4>📊 Resolution Enhancement Summary</h4>
-                #             <ul>
-                #                 <li><strong>Original:</strong> {img1.shape[1]} × {img1.shape[0]} pixels</li>
-                #                 <li><strong>Super-resolved:</strong> {sr_result.shape[1]} × {sr_result.shape[0]} pixels</li>
-                #                 <li><strong>Scale Factor:</strong> {scale_factor}× ({sr_result.shape[1] // img1.shape[1]:.1f}× actual)</li>
-                #                 <li><strong>Total Pixels:</strong> {img1.shape[0] * img1.shape[1]:,} → {sr_result.shape[0] * sr_result.shape[1]:,}</li>
-                #             </ul>
-                #         </div>
-                #         """,
-                #         unsafe_allow_html=True
-                # )
-                if sr_result is not None and img1 is not None:
-                    original_pixels = img1.shape[0] * img1.shape[1]
-                    sr_pixels = sr_result.shape[0] * sr_result.shape[1]
-                    pixel_increase = ((sr_pixels - original_pixels) / original_pixels) * 100
-
-                    card_stats_html = f"""
-                    <style>
-                        .enhancement-container {{
-                            background: #f1f5f9;
-                            border-radius: 16px;
-                            padding: 2rem;
-                            margin-top: 2rem;
-                            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-                            font-family: 'Segoe UI', sans-serif;
-                            width: 100%;
-                            overflow-x: auto;
-                        }}
-
-                        .enhancement-title {{
-                            text-align: center;
-                            font-size: 1.9rem;
-                            font-weight: 700;
-                            color: #1e293b;
-                            margin-bottom: 2rem;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            gap: 0.6rem;
-                        }}
-
-                        .enhancement-title::before {{
-                            content: "📏";
-                            font-size: 1.5rem;
-                        }}
-
-                        .enhancement-grid {{
-                            display: flex;
-                            gap: 20px;
-                            flex-wrap: wrap;
-                            justify-content: center;
-                        }}
-
-                        .enhancement-card {{
-                            background: #ffffff;
-                            border-radius: 12px;
-                            padding: 1.4rem 1rem;
-                            text-align: center;
-                            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-                            width: 160px;
-                            flex: 1 1 160px;
-                        }}
-
-                        .enhancement-value {{
-                            font-size: 1.4rem;
-                            font-weight: 700;
-                            color: #0f172a;
-                        }}
-
-                        .enhancement-label {{
-                            font-size: 0.9rem;
-                            color: #64748b;
-                            margin-top: 0.3rem;
-                        }}
-                    </style>
-
-                    <div class="enhancement-container">
-                        <div class="enhancement-title">Resolution Enhancement Statistics</div>
-                        <div class="enhancement-grid">
-                            <div class="enhancement-card">
-                                <div class="enhancement-value">{img1.shape[1]} × {img1.shape[0]}</div>
-                                <div class="enhancement-label">Original Resolution</div>
-                            </div>
-                            <div class="enhancement-card">
-                                <div class="enhancement-value">{sr_result.shape[1]} × {sr_result.shape[0]}</div>
-                                <div class="enhancement-label">Enhanced Resolution</div>
-                            </div>
-                            <div class="enhancement-card">
-                                <div class="enhancement-value">{scale_factor}×</div>
-                                <div class="enhancement-label">Scale Factor</div>
-                            </div>
-                            <div class="enhancement-card">
-                                <div class="enhancement-value">{original_pixels:,}</div>
-                                <div class="enhancement-label">Original Pixels</div>
-                            </div>
-                            <div class="enhancement-card">
-                                <div class="enhancement-value">{sr_pixels:,}</div>
-                                <div class="enhancement-label">Enhanced Pixels</div>
-                            </div>
-                            <div class="enhancement-card">
-                                <div class="enhancement-value">{pixel_increase:.1f}%</div>
-                                <div class="enhancement-label">Pixel Increase</div>
-                            </div>
-                        </div>
-                    </div>
-                    """
-                    # hr_display = robust_display_format(hr_display_normalized)
-                    # st.image(hr_display, caption="HR Ground Truth", use_column_width=True, clamp=True)
-                    st.markdown(card_stats_html, unsafe_allow_html=True)
-
-
-
-
-
+                st.markdown('<div class="success-box">', unsafe_allow_html=True)
+                st.markdown(f"""
+                **📊 Resolution Enhancement:**
+                - Original: {img1.shape[1]} × {img1.shape[0]} pixels
+                - Super-resolved: {sr_result.shape[1]} × {sr_result.shape[0]} pixels
+                - Scale Factor: {scale_factor}× ({sr_result.shape[1]//img1.shape[1]:.1f}× actual)
+                - Total Pixels: {img1.shape[0]*img1.shape[1]:,} → {sr_result.shape[0]*sr_result.shape[1]:,}
+                """)
+                st.markdown('</div>', unsafe_allow_html=True)
                 
                 # --- Full-reference metrics ---
                 if hr_reference is not None:
@@ -1041,7 +866,7 @@ def main():
                     
                     # Check if HR image is predominantly bright
                     if hr_img.mean() > 240:
-                        # st.warning("⚠️ HR ground truth image appears to be very bright. This might affect visualization but not metrics.")
+                        st.warning("⚠️ HR ground truth image appears to be very bright. This might affect visualization but not metrics.")
                         # Create a normalized version for better display while keeping original for metrics
                         hr_original = hr_img.copy()  # Keep original for metrics
                         # Normalize for display
@@ -1141,17 +966,12 @@ def main():
                         Image Quality: {quality}
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    # display_image_stats(hr_original, "HR Ground Truth (original data)")
-                    # display_image_stats(hr_display_normalized, "HR Ground Truth (normalized for display)")
-                    def pil_to_base64(img):
-                        buffer = BytesIO()
-                        img.save(buffer, format="PNG")
-                        return base64.b64encode(buffer.getvalue()).decode()
-                    
+
+                    display_image_stats(hr_original, "HR Ground Truth (original data)")
+                    display_image_stats(hr_display_normalized, "HR Ground Truth (normalized for display)")
                     hr_display = robust_display_format(hr_display_normalized)
-                    # display_image_stats(hr_display, "HR Ground Truth (after display format)")
-                    st.image(hr_display, caption="HR Ground Truth", use_container_width=True, clamp=True)
+                    display_image_stats(hr_display, "HR Ground Truth (after display format)")
+                    st.image(hr_display, caption="HR Ground Truth", use_column_width=True, clamp=True)
 
                 # --- No-reference metrics ---
                 st.markdown('<div class="sub-header">📈 No-Reference Quality Metrics</div>', unsafe_allow_html=True)
