@@ -67,6 +67,164 @@ st.markdown("""
     padding: 1rem;
     margin: 1rem 0;
 }
+.metrics-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #718096;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.metric-description {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    font-style: italic;
+    line-height: 1.3;
+}
+
+.quality-badge {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.quality-excellent {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+}
+
+.quality-good {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    color: white;
+}
+
+.quality-fair {
+    background: linear-gradient(135deg, #ed8936, #dd6b20);
+    color: white;
+}
+
+.quality-poor {
+    background: linear-gradient(135deg, #f56565, #e53e3e);
+    color: white;
+}
+
+.no-ref-metrics {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-left: 5px solid #4299e1;
+}
+
+.comparison-stats {
+    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 2px solid #e2e8f0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #718096;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.progress-ring {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+}
+
+.progress-ring-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #4299e1;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.metric-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}        
 </style>
 """, unsafe_allow_html=True)
 
@@ -325,6 +483,146 @@ def calculate_brisque(image):
         return np.random.uniform(20.0, 80.0)  # BRISQUE scores typically range 0-100
     except:
         return None
+# Function to display metrics aesthetically
+def display_metrics_aesthetic(metrics, hr_img=None, sr_result=None, img1=None, scale_factor=4):
+    """Display metrics in an aesthetic manner"""
+    
+    # Validate metric keys
+    if not metrics or not all(k in metrics for k in ['MSE', 'RMSE', 'PSNR', 'SSIM']):
+        st.error("⚠️ Incomplete metrics data. Cannot display results.")
+        return
+    
+    # Color logic
+    psnr_color = "#22c55e" if metrics['PSNR'] > 30 else "#3b82f6" if metrics['PSNR'] > 25 else "#eab308" if metrics['PSNR'] > 20 else "#ef4444"
+    ssim_color = "#22c55e" if metrics['SSIM'] > 0.9 else "#3b82f6" if metrics['SSIM'] > 0.8 else "#eab308" if metrics['SSIM'] > 0.7 else "#ef4444"
+
+    # Overall quality badge
+    if metrics['PSNR'] > 30:
+        quality, badge_class = "Excellent", "quality-excellent"
+    elif metrics['PSNR'] > 25:
+        quality, badge_class = "Good", "quality-good"
+    elif metrics['PSNR'] > 20:
+        quality, badge_class = "Fair", "quality-fair"
+    else:
+        quality, badge_class = "Poor", "quality-poor"
+
+    # Build the full metrics HTML
+    metrics_html = f"""
+    <div class="metrics-container">
+        <h2 style="color: white; text-align: center; margin-bottom: 1.5rem; font-size: 2rem;">📊 Image Quality Metrics</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">📉</div>
+                <div class="metric-label">Mean Squared Error</div>
+                <div class="metric-value">{metrics['MSE']:.6f}</div>
+                <div class="metric-description">Lower values indicate better quality</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📐</div>
+                <div class="metric-label">Root Mean Squared Error</div>
+                <div class="metric-value">{metrics['RMSE']:.6f}</div>
+                <div class="metric-description">Pixel-level error magnitude</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📶</div>
+                <div class="metric-label">Peak Signal-to-Noise Ratio</div>
+                <div class="metric-value" style="color: {psnr_color};">{metrics['PSNR']:.2f} dB</div>
+                <div class="metric-description">Signal quality vs noise level</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🔍</div>
+                <div class="metric-label">Structural Similarity Index</div>
+                <div class="metric-value" style="color: {ssim_color};">{metrics['SSIM']:.4f}</div>
+                <div class="metric-description">Structural similarity (0-1 scale)</div>
+            </div>
+        </div>
+
+        
+    </div>
+    <div style="text-align: center; margin-top: 2rem;">
+        <div class="quality-badge {badge_class}">
+            ⭐ Overall Quality: {quality}
+        </div>
+    </div>
+    """
+    st.markdown(metrics_html, unsafe_allow_html=True)
+
+    # Resolution comparison stats
+    if sr_result is not None and img1 is not None:
+        original_pixels = img1.shape[0] * img1.shape[1]
+        sr_pixels = sr_result.shape[0] * sr_result.shape[1]
+        pixel_increase = ((sr_pixels - original_pixels) / original_pixels) * 100
+
+        stats_html = f"""
+        <div class="comparison-stats">
+            <h3 style="color: #2d3748; text-align: center; margin-bottom: 1rem;">📏 Resolution Enhancement Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{img1.shape[1]} × {img1.shape[0]}</div>
+                    <div class="stat-label">Original Resolution</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{sr_result.shape[1]} × {sr_result.shape[0]}</div>
+                    <div class="stat-label">Enhanced Resolution</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{scale_factor}×</div>
+                    <div class="stat-label">Scale Factor</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{original_pixels:,}</div>
+                    <div class="stat-label">Original Pixels</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{sr_pixels:,}</div>
+                    <div class="stat-label">Enhanced Pixels</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{pixel_increase:.1f}%</div>
+                    <div class="stat-label">Pixel Increase</div>
+                </div>
+            </div>
+        </div>
+        """
+        st.markdown(stats_html, unsafe_allow_html=True)
+
+def display_no_ref_metrics_aesthetic(niqe_score, brisque_score):
+    """Display no-reference metrics aesthetically"""
+    
+    st.markdown('<div class="no-ref-metrics">', unsafe_allow_html=True)
+    st.markdown('<h3 style="color: #2d3748; text-align: center; margin-bottom: 1rem;">📈 No-Reference Quality Assessment</h3>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if niqe_score:
+            niqe_color = "#22c55e" if niqe_score < 4 else "#3b82f6" if niqe_score < 5 else "#eab308" if niqe_score < 6 else "#ef4444"
+            niqe_quality = "Excellent" if niqe_score < 4 else "Good" if niqe_score < 5 else "Fair" if niqe_score < 6 else "Poor"
+            
+            st.markdown(f'''
+            <div style="text-align: center; padding: 1rem; background: white; border-radius: 10px; margin-bottom: 1rem;">
+                <div style="font-size: 2rem; color: {niqe_color}; font-weight: 700;">{niqe_score:.2f}</div>
+                <div style="font-size: 0.9rem; color: #718096; font-weight: 600;">NIQE Score</div>
+                <div style="font-size: 0.8rem; color: #a0aec0; margin-top: 0.5rem;">Quality: {niqe_quality}</div>
+                <div style="font-size: 0.7rem; color: #cbd5e0; margin-top: 0.3rem;">Lower is better (3-8 range)</div>
+            </div>
+            ''', unsafe_allow_html=True)
+    
+    with col2:
+        if brisque_score:
+            brisque_color = "#22c55e" if brisque_score < 30 else "#3b82f6" if brisque_score < 50 else "#eab308" if brisque_score < 70 else "#ef4444"
+            brisque_quality = "Excellent" if brisque_score < 30 else "Good" if brisque_score < 50 else "Fair" if brisque_score < 70 else "Poor"
+            
+            st.markdown(f'''
+            <div style="text-align: center; padding: 1rem; background: white; border-radius: 10px; margin-bottom: 1rem;">
+                <div style="font-size: 2rem; color: {brisque_color}; font-weight: 700;">{brisque_score:.2f}</div>
+                <div style="font-size: 0.9rem; color: #718096; font-weight: 600;">BRISQUE Score</div>
+                <div style="font-size: 0.8rem; color: #a0aec0; margin-top: 0.5rem;">Quality: {brisque_quality}</div>
+                <div style="font-size: 0.7rem; color: #cbd5e0; margin-top: 0.3rem;">Lower is better (0-100 range)</div>
+            </div>
+            ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Main App
 def main():
@@ -549,34 +847,8 @@ def main():
                     # Calculate metrics
                     metrics = calculate_metrics(hr_img, sr_result)
                     
-                    # Display metrics
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("MSE", f"{metrics['MSE']:.6f}")
-                    with col2:
-                        st.metric("RMSE", f"{metrics['RMSE']:.6f}")
-                    with col3:
-                        st.metric("PSNR", f"{metrics['PSNR']:.2f} dB")
-                    with col4:
-                        st.metric("SSIM", f"{metrics['SSIM']:.4f}")
-                    
-                    # Quality assessment
-                    if metrics['PSNR'] > 30:
-                        quality = "Excellent"
-                        color = "#22c55e"
-                    elif metrics['PSNR'] > 25:
-                        quality = "Good"
-                        color = "#3b82f6"
-                    elif metrics['PSNR'] > 20:
-                        quality = "Fair"
-                        color = "#eab308"
-                    else:
-                        quality = "Poor"
-                        color = "#ef4444"
-                    
-                    st.markdown(f'<div style="background-color: {color}20; border: 1px solid {color}; border-radius: 8px; padding: 1rem; margin: 1rem 0;">', unsafe_allow_html=True)
-                    st.markdown(f"**Quality Assessment: {quality}**")
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    # Display metrics aesthetically
+                    display_metrics_aesthetic(metrics, hr_img, sr_result, img1, scale_factor)
                     
                     # Display HR reference
                     st.image(hr_img, caption="HR Reference", use_column_width=True, clamp=True)
@@ -584,18 +856,11 @@ def main():
                 # No-reference metrics
                 st.markdown('<div class="sub-header">📈 No-Reference Quality Metrics</div>', unsafe_allow_html=True)
                 
-                col1, col2 = st.columns(2)
-                with col1:
-                    niqe_score = calculate_niqe(sr_result)
-                    if niqe_score:
-                        st.metric("NIQE Score", f"{niqe_score:.2f}")
-                        st.caption("Lower is better (3-8 range)")
+                niqe_score = calculate_niqe(sr_result)
+                brisque_score = calculate_brisque(sr_result)
                 
-                with col2:
-                    brisque_score = calculate_brisque(sr_result)
-                    if brisque_score:
-                        st.metric("BRISQUE Score", f"{brisque_score:.2f}")
-                        st.caption("Lower is better (0-100 range)")
+                # Display no-reference metrics aesthetically
+                display_no_ref_metrics_aesthetic(niqe_score, brisque_score)
                 
                 # Download result
                 st.markdown('<div class="sub-header">💾 Download Results</div>', unsafe_allow_html=True)
